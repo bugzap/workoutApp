@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView, StyleSheet, Button, Alert } from "react-native";
 import { Checkbox } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { workoutData } from "./data/workoutData";
+import { workoutData } from "../data/workoutData";
+
+
+import BackgroundFetch from 'react-native-background-fetch';
 
 // Helper function to calculate the current week based on today's date
 const calculateCurrentWeek = (): number => {
@@ -22,10 +25,14 @@ const calculateCurrentWeek = (): number => {
   return currentWeek;
 };
 
+
+
+
+
 const App = () => {
   const [currentWeek, setCurrentWeek] = useState<number>(1); // Default to week 1
   const [completedExercises, setCompletedExercises] = useState<any>({}); // Track checked exercises
-
+  
   // Function to load saved progress from AsyncStorage
   const loadProgress = async () => {
     try {
@@ -85,6 +92,7 @@ const App = () => {
     setCurrentWeek(week); // Set the current week state
     loadProgress(); // Load saved progress when the app starts
   }, []);
+  ;
 
   const renderWorkout = () => {
     const weekWorkout = getWorkoutForWeek();
@@ -148,9 +156,43 @@ const App = () => {
     );
   };
 
+  const handleEndWorkout = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+      const workoutDataWithDate = {
+        date: today,
+        data: completedExercises,
+      };
+      await AsyncStorage.setItem(`workout_${today}`, JSON.stringify(workoutDataWithDate));
+      setCompletedExercises({}); // Clear all checkboxes
+      Alert.alert("Workout saved!");
+      console.log("Workout ended and data saved");
+    } catch (error) {
+      console.error("Failed to save workout data:", error);
+    }
+  };
+
+  const handleViewSavedWorkouts = async () => {
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      const workoutKeys = keys.filter(key => key.startsWith('workout_'));
+      const workouts = await AsyncStorage.multiGet(workoutKeys);
+      const workoutData = workouts.map(([key, value]) => ({ key, value: JSON.parse(value) }));
+      console.log("Saved Workouts:", workoutData);
+      Alert.alert("Saved Workouts", JSON.stringify(workoutData, null, 2));
+    } catch (error) {
+      console.error("Failed to load saved workouts:", error);
+    }
+  };
+
   return (
     <View style={styles.appContainer}>
       {renderWorkout()}
+      <View style={styles.buttonContainer}>
+        <Button title="End Workout" onPress={handleEndWorkout} />
+        <View style={styles.buttonSpacing} />
+        <Button title="View Saved Workouts" onPress={handleViewSavedWorkouts} />
+      </View>
     </View>
   );
 };
@@ -160,6 +202,15 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 50,
     paddingHorizontal: 10,
+    justifyContent: 'space-between', // Ensure the button is at the bottom
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  buttonSpacing: {
+    width: 10, // Adjust the width to give space between buttons
+    height: 10, // Adjust the height to give space between buttons
   },
   container: {
     flex: 1,
