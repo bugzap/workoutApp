@@ -3,15 +3,15 @@ import { View, Text, ScrollView, StyleSheet, Button, Alert } from "react-native"
 import { Checkbox } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { workoutData } from "../data/workoutData";
+import CalendarApp from './Calendar';
 
 
-import BackgroundFetch from 'react-native-background-fetch';
 
 // Helper function to calculate the current week based on today's date
 const calculateCurrentWeek = (): number => {
   // Define the reference start date (e.g., the first workout day)
   const referenceDate = new Date("2024-12-19"); // Example start date (MM/DD/YYYY)
-  
+
   // Get today's date
   const today = new Date();
 
@@ -32,7 +32,8 @@ const calculateCurrentWeek = (): number => {
 const App = () => {
   const [currentWeek, setCurrentWeek] = useState<number>(1); // Default to week 1
   const [completedExercises, setCompletedExercises] = useState<any>({}); // Track checked exercises
-  
+  const [showCalendar, setShowCalendar] = useState(false);
+
   // Function to load saved progress from AsyncStorage
   const loadProgress = async () => {
     try {
@@ -72,11 +73,15 @@ const App = () => {
     if (!updatedProgress[week][groupIndex]) {
       updatedProgress[week][groupIndex] = [];
     }
+    if (!updatedProgress[week][groupIndex][exerciseIndex]) {
+      updatedProgress[week][groupIndex][exerciseIndex] = [];
+    }
+    if (!updatedProgress[week][groupIndex][exerciseIndex][setIndex]) {
+      updatedProgress[week][groupIndex][exerciseIndex][setIndex] = [];
+    }
 
     // Update the state for the specific set
-    updatedProgress[week][groupIndex][exerciseIndex] = updatedProgress[week][groupIndex][exerciseIndex] || {};
     updatedProgress[week][groupIndex][exerciseIndex][setIndex] = checked;
-
     setCompletedExercises(updatedProgress);
     saveProgress(); // Save progress immediately
   };
@@ -118,7 +123,7 @@ const App = () => {
 
     return (
       <ScrollView style={styles.container}>
-        <Text style={styles.title}>Week {currentWeek} Workout</Text>
+        <Text style={styles.title}>💪 Week {currentWeek} Workout 💪</Text>
         {exerciseGroups.map((group, groupIndex) => (
           <View key={groupIndex} style={styles.group}>
             <Text style={styles.groupTitle}>Group {groupIndex + 1}</Text>
@@ -165,6 +170,9 @@ const App = () => {
       };
       await AsyncStorage.setItem(`workout_${today}`, JSON.stringify(workoutDataWithDate));
       setCompletedExercises({}); // Clear all checkboxes
+
+      //clear saved progress
+      await AsyncStorage.removeItem("workoutProgress");
       Alert.alert("Workout saved!");
       console.log("Workout ended and data saved");
     } catch (error) {
@@ -172,27 +180,18 @@ const App = () => {
     }
   };
 
-  const handleViewSavedWorkouts = async () => {
-    try {
-      const keys = await AsyncStorage.getAllKeys();
-      const workoutKeys = keys.filter(key => key.startsWith('workout_'));
-      const workouts = await AsyncStorage.multiGet(workoutKeys);
-      const workoutData = workouts.map(([key, value]) => ({ key, value: JSON.parse(value) }));
-      console.log("Saved Workouts:", workoutData);
-      Alert.alert("Saved Workouts", JSON.stringify(workoutData, null, 2));
-    } catch (error) {
-      console.error("Failed to load saved workouts:", error);
-    }
-  };
-
   return (
     <View style={styles.appContainer}>
       {renderWorkout()}
       <View style={styles.buttonContainer}>
-        <Button title="End Workout" onPress={handleEndWorkout} />
+        <Button title="End Workout" onPress={handleEndWorkout} color={'red'}/>
         <View style={styles.buttonSpacing} />
-        <Button title="View Saved Workouts" onPress={handleViewSavedWorkouts} />
+        <Button
+          title={showCalendar ? "Hide Calendar" : "Show Calendar"}
+          onPress={() => setShowCalendar(!showCalendar)}
+        />
       </View>
+      {showCalendar && <CalendarApp />}
     </View>
   );
 };
