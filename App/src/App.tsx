@@ -6,7 +6,6 @@ import { workoutData } from "../data/workoutData";
 import CalendarApp from './Calendar';
 
 
-
 // Helper function to calculate the current week based on today's date
 const calculateCurrentWeek = (): number => {
   // Define the reference start date (e.g., the first workout day)
@@ -20,14 +19,9 @@ const calculateCurrentWeek = (): number => {
   const diffDays = Math.floor(diffTime / (1000 * 3600 * 24)); // Convert milliseconds to days
 
   // Calculate the current week (1-based index)
-  const currentWeek = Math.floor(diffDays / 7) + 1;
-
+  const currentWeek = (Math.floor(diffDays / 7))%7 + 1;
   return currentWeek;
 };
-
-
-
-
 
 const App = () => {
   const [currentWeek, setCurrentWeek] = useState<number>(1); // Default to week 1
@@ -89,12 +83,14 @@ const App = () => {
   // Get the workout for the current week
   const getWorkoutForWeek = () => {
     const weekKey = `week${currentWeek}`;
+    console.log(weekKey);
     return workoutData[weekKey];
   };
 
   useEffect(() => {
     const week = calculateCurrentWeek(); // Dynamically calculate the current week
     setCurrentWeek(week); // Set the current week state
+    
     loadProgress(); // Load saved progress when the app starts
   }, []);
   ;
@@ -161,6 +157,8 @@ const App = () => {
     );
   };
 
+
+
   const handleEndWorkout = async () => {
     try {
       const today = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
@@ -171,10 +169,10 @@ const App = () => {
       await AsyncStorage.setItem(`workout_${today}`, JSON.stringify(workoutDataWithDate));
       setCompletedExercises({}); // Clear all checkboxes
 
+     //saveDataToFireStore(); // Save data to Firestore
       //clear saved progress
       await AsyncStorage.removeItem("workoutProgress");
       Alert.alert("Workout saved!");
-      console.log("Workout ended and data saved");
     } catch (error) {
       console.error("Failed to save workout data:", error);
     }
@@ -184,12 +182,25 @@ const App = () => {
     <View style={styles.appContainer}>
       {renderWorkout()}
       <View style={styles.buttonContainer}>
+        <View style={styles.buttonStyle}>
         <Button title="End Workout" onPress={handleEndWorkout} color={'red'}/>
+        </View>
         <View style={styles.buttonSpacing} />
+        <View style={styles.buttonStyle}>
         <Button
           title={showCalendar ? "Hide Calendar" : "Show Calendar"}
           onPress={() => setShowCalendar(!showCalendar)}
         />
+        </View>
+        <View style={styles.buttonSpacing} />
+        <View style={styles.buttonStyle}>
+        <Button title="Previous Week" onPress={() => setCurrentWeek((currentWeek - 2 + 7)% 7 + 1 )} />
+        </View>
+        <View style={styles.buttonSpacing} />
+        <View style={styles.buttonStyle}>
+        <Button title="Next Week" onPress={() => setCurrentWeek((currentWeek) % 7 + 1)} />
+          </View> 
+
       </View>
       {showCalendar && <CalendarApp />}
     </View>
@@ -205,10 +216,14 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
+  buttonStyle: {
+    width: '48%', // Adjust the width to fit two buttons per row
+    marginBottom: 10, // Add some space between rows
+  },
   buttonSpacing: {
-    width: 10, // Adjust the width to give space between buttons
     height: 10, // Adjust the height to give space between buttons
   },
   container: {
