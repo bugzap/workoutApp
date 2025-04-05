@@ -1,0 +1,23 @@
+{
+  "cli": {
+    "version": ">= 14.2.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    
+
+    "debug": {
+      "environment": "preview",
+      "android": {
+        "releaseChannel": "default",
+        "buildType": "apk",
+        "env": {
+          "NODE_ENV": "development"
+        }
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

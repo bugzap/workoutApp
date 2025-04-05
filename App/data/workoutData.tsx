@@ -1,20 +1,19 @@
 export const workoutData: Record<string, { name: string; sets: number }[]> = {
   week1: [
     // Group 1: Before First Water Break
-    { name: "Step ups – 5 riser w/ 10 lbs. x 12", sets: 3 },
-    { name: "Push ups on bosu x 10", sets: 3 },
-    { name: "TRX – squat to row x 10", sets: 3 },
-    { name: "Leg press (position 8) 125 lb. x 12", sets: 3 },
+    { name: "Body weight squats x 12", sets: 3 },
+    { name: "Push ups on knees x 12", sets: 3 },
+    { name: "Bridges, feet on blue pad x 10", sets: 3 },
+    { name: "Cable row, 30lbs  x 12", sets: 3 },
     { name: "High plank – 30 seconds", sets: 3 },
 
     // Water Break 1
     { name: "Water Break", sets: 1 },
 
     // Group 2: After First Water Break
-    { name: "Bridges w/ feet on bosu x 12", sets: 2 },
-    { name: "Bicep curls with heavy (blue handle) band x 12", sets: 2 },
-    { name: "On hands and knees – reach opposite arm/opposite leg x 8", sets: 2 },
-  ],
+    { name: "Forearm plank 30 seconds", sets: 3 },
+    { name: "Torso twist, 10lb med ball x 12", sets: 3}
+    ],
 
   week2: [
     // Group 1: Before First Water Break
